@@ -1,0 +1,1722 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="English Pro">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%234F46E5' width='100' height='100' rx='20'/><text x='50' y='65' font-size='50' text-anchor='middle' fill='white'>EN</text></svg>">
+    <link rel="manifest" href="manifest.json">
+    <title>English Pro - Lær Engelsk</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --primary: #4F46E5;
+            --primary-dark: #3730A3;
+            --success: #10B981;
+            --error: #EF4444;
+            --warning: #F59E0B;
+            --bg: #F8FAFC;
+            --card: #FFFFFF;
+            --text: #1E293B;
+            --text-muted: #64748B;
+            --border: #E2E8F0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .app {
+            max-width: 500px;
+            margin: 0 auto;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 20px;
+            padding-top: calc(20px + env(safe-area-inset-top));
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .streak-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .level-bar {
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            height: 8px;
+            overflow: hidden;
+        }
+
+        .level-progress {
+            background: var(--success);
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        .level-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            margin-top: 5px;
+            opacity: 0.9;
+        }
+
+        /* Main Content */
+        .main {
+            flex: 1;
+            padding: 20px;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-badge {
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            background: var(--bg);
+            color: var(--text-muted);
+        }
+
+        /* Exercise Types */
+        .exercise-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .exercise-btn {
+            background: var(--bg);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 20px 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .exercise-btn:active {
+            transform: scale(0.97);
+        }
+
+        .exercise-btn.completed {
+            border-color: var(--success);
+            background: #ECFDF5;
+        }
+
+        .exercise-btn .icon {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .exercise-btn .label {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .exercise-btn .status {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* Exercise View */
+        .exercise-view {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--bg);
+            z-index: 200;
+            flex-direction: column;
+        }
+
+        .exercise-view.active {
+            display: flex;
+        }
+
+        .exercise-header {
+            background: var(--card);
+            padding: 15px 20px;
+            padding-top: calc(15px + env(safe-area-inset-top));
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .exercise-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .progress-dots {
+            display: flex;
+            gap: 6px;
+            margin-left: auto;
+        }
+
+        .progress-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--border);
+        }
+
+        .progress-dot.done {
+            background: var(--success);
+        }
+
+        .progress-dot.current {
+            background: var(--primary);
+        }
+
+        .exercise-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .question-card {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+
+        .question-type {
+            font-size: 12px;
+            color: var(--primary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+        }
+
+        .question-text {
+            font-size: 20px;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        .question-text .blank {
+            display: inline-block;
+            min-width: 80px;
+            border-bottom: 2px dashed var(--primary);
+            margin: 0 5px;
+        }
+
+        /* Input Styles */
+        .answer-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .answer-input:focus {
+            border-color: var(--primary);
+        }
+
+        .answer-input.correct {
+            border-color: var(--success);
+            background: #ECFDF5;
+        }
+
+        .answer-input.incorrect {
+            border-color: var(--error);
+            background: #FEF2F2;
+        }
+
+        /* Multiple Choice */
+        .choices {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .choice-btn {
+            width: 100%;
+            padding: 15px 20px;
+            font-size: 16px;
+            text-align: left;
+            background: var(--card);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .choice-btn:active {
+            transform: scale(0.98);
+        }
+
+        .choice-btn.selected {
+            border-color: var(--primary);
+            background: #EEF2FF;
+        }
+
+        .choice-btn.correct {
+            border-color: var(--success);
+            background: #ECFDF5;
+        }
+
+        .choice-btn.incorrect {
+            border-color: var(--error);
+            background: #FEF2F2;
+        }
+
+        /* Textarea for writing */
+        .writing-area {
+            width: 100%;
+            min-height: 150px;
+            padding: 15px;
+            font-size: 16px;
+            line-height: 1.6;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            resize: none;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .writing-area:focus {
+            border-color: var(--primary);
+        }
+
+        .char-count {
+            text-align: right;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 8px;
+        }
+
+        /* Feedback */
+        .feedback {
+            padding: 15px;
+            border-radius: 12px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .feedback.show {
+            display: block;
+        }
+
+        .feedback.success {
+            background: #ECFDF5;
+            border: 1px solid var(--success);
+            color: #065F46;
+        }
+
+        .feedback.error {
+            background: #FEF2F2;
+            border: 1px solid var(--error);
+            color: #991B1B;
+        }
+
+        .feedback-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .correction {
+            background: var(--card);
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        .correction-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
+
+        /* Speech Section */
+        .speech-section {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .speech-text {
+            font-size: 24px;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .speech-translation {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+        }
+
+        .mic-btn {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: var(--primary);
+            border: none;
+            color: white;
+            font-size: 32px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin: 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mic-btn:active {
+            transform: scale(0.95);
+        }
+
+        .mic-btn.recording {
+            background: var(--error);
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .speech-result {
+            font-size: 18px;
+            padding: 15px;
+            background: var(--bg);
+            border-radius: 12px;
+            min-height: 60px;
+        }
+
+        .play-btn {
+            background: var(--bg);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 12px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 10px auto;
+        }
+
+        /* Bottom Actions */
+        .exercise-actions {
+            padding: 20px;
+            padding-bottom: calc(20px + env(safe-area-inset-bottom));
+            background: var(--card);
+            border-top: 1px solid var(--border);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            font-size: 18px;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:active {
+            background: var(--primary-dark);
+        }
+
+        .btn-primary:disabled {
+            background: var(--border);
+            color: var(--text-muted);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        /* Stats Section */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px 10px;
+            background: var(--bg);
+            border-radius: 12px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* Daily Goal */
+        .daily-goal {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+            border-radius: 12px;
+            margin-bottom: 16px;
+        }
+
+        .goal-icon {
+            font-size: 32px;
+        }
+
+        .goal-text {
+            flex: 1;
+        }
+
+        .goal-title {
+            font-weight: 600;
+            color: #92400E;
+        }
+
+        .goal-progress {
+            font-size: 14px;
+            color: #B45309;
+        }
+
+        /* Settings/History views */
+        .tab-bar {
+            display: flex;
+            background: var(--card);
+            border-top: 1px solid var(--border);
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            background: none;
+            border: none;
+            font-size: 12px;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+        }
+
+        .tab-btn .tab-icon {
+            font-size: 24px;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        /* History List */
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: var(--bg);
+            border-radius: 12px;
+            margin-bottom: 10px;
+        }
+
+        .history-date {
+            font-weight: 500;
+        }
+
+        .history-score {
+            color: var(--success);
+            font-weight: 600;
+        }
+
+        /* Difficulty selector */
+        .difficulty-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .diff-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            background: var(--card);
+            font-size: 14px;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .diff-btn.active {
+            border-color: var(--primary);
+            background: #EEF2FF;
+            color: var(--primary);
+        }
+
+        /* Loading */
+        .loading {
+            display: flex;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Results screen */
+        .results-screen {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .results-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        .results-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .results-subtitle {
+            color: var(--text-muted);
+            margin-bottom: 30px;
+        }
+
+        .results-stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .result-stat {
+            text-align: center;
+        }
+
+        .result-stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .result-stat-label {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        /* View containers */
+        .view {
+            display: none;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        /* Scrollable areas */
+        .scroll-content {
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <!-- Main View -->
+        <div id="mainView" class="view active">
+            <div class="header">
+                <div class="header-top">
+                    <h1>🇬🇧 English Pro</h1>
+                    <div class="streak-badge">
+                        <span>🔥</span>
+                        <span id="streakCount">0</span> dager
+                    </div>
+                </div>
+                <div class="level-bar">
+                    <div class="level-progress" id="levelProgress" style="width: 0%"></div>
+                </div>
+                <div class="level-info">
+                    <span>Nivå <span id="currentLevel">1</span></span>
+                    <span><span id="xpCurrent">0</span>/<span id="xpNeeded">100</span> XP</span>
+                </div>
+            </div>
+
+            <div class="main scroll-content">
+                <div class="daily-goal" id="dailyGoal">
+                    <div class="goal-icon">🎯</div>
+                    <div class="goal-text">
+                        <div class="goal-title">Dagens mål</div>
+                        <div class="goal-progress"><span id="dailyProgress">0</span>/2 økter fullført</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">📚 Dagens øvelser</div>
+                        <div class="card-badge" id="difficultyBadge">Nybegynner</div>
+                    </div>
+                    <div class="exercise-grid">
+                        <div class="exercise-btn" id="grammarBtn" onclick="startExercise('grammar')">
+                            <div class="icon">📝</div>
+                            <div class="label">Grammatikk</div>
+                            <div class="status" id="grammarStatus">Ikke fullført</div>
+                        </div>
+                        <div class="exercise-btn" id="writingBtn" onclick="startExercise('writing')">
+                            <div class="icon">✍️</div>
+                            <div class="label">Skriving</div>
+                            <div class="status" id="writingStatus">Ikke fullført</div>
+                        </div>
+                        <div class="exercise-btn" id="speechBtn" onclick="startExercise('speech')">
+                            <div class="icon">🎤</div>
+                            <div class="label">Uttale</div>
+                            <div class="status" id="speechStatus">Ikke fullført</div>
+                        </div>
+                        <div class="exercise-btn" id="listeningBtn" onclick="startExercise('listening')">
+                            <div class="icon">👂</div>
+                            <div class="label">Lytting</div>
+                            <div class="status" id="listeningStatus">Ikke fullført</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">📊 Din statistikk</div>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-value" id="totalExercises">0</div>
+                            <div class="stat-label">Øvelser</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="accuracy">0%</div>
+                            <div class="stat-label">Nøyaktighet</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="totalWords">0</div>
+                            <div class="stat-label">Ord lært</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">⚙️ Vanskelighetsgrad</div>
+                    </div>
+                    <div class="difficulty-selector">
+                        <button class="diff-btn active" data-diff="beginner" onclick="setDifficulty('beginner')">Nybegynner</button>
+                        <button class="diff-btn" data-diff="intermediate" onclick="setDifficulty('intermediate')">Middels</button>
+                        <button class="diff-btn" data-diff="advanced" onclick="setDifficulty('advanced')">Avansert</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Exercise View -->
+        <div id="exerciseView" class="exercise-view">
+            <div class="exercise-header">
+                <button class="back-btn" onclick="closeExercise()">←</button>
+                <div class="exercise-title" id="exerciseTitle">Grammatikk</div>
+                <div class="progress-dots" id="progressDots"></div>
+            </div>
+            
+            <div class="exercise-content scroll-content" id="exerciseContent">
+                <!-- Dynamic content -->
+            </div>
+
+            <div class="exercise-actions">
+                <button class="btn btn-primary" id="actionBtn" onclick="handleAction()">Sjekk svar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========== APP STATE ==========
+        let state = {
+            level: 1,
+            xp: 0,
+            streak: 0,
+            lastActive: null,
+            difficulty: 'beginner',
+            totalExercises: 0,
+            correctAnswers: 0,
+            wordsLearned: 0,
+            dailyCompleted: 0,
+            todayDate: new Date().toDateString(),
+            completedToday: {
+                grammar: false,
+                writing: false,
+                speech: false,
+                listening: false
+            }
+        };
+
+        let currentExercise = {
+            type: null,
+            questions: [],
+            currentIndex: 0,
+            score: 0,
+            answered: false,
+            userAnswer: null
+        };
+
+        // ========== EXERCISE DATA ==========
+        const exerciseData = {
+            beginner: {
+                grammar: [
+                    {
+                        type: 'fillBlank',
+                        question: 'She ___ to work every day.',
+                        answer: 'goes',
+                        options: ['go', 'goes', 'going', 'gone'],
+                        explanation: 'Med "she" bruker vi "goes" (tredje person entall, presens).'
+                    },
+                    {
+                        type: 'fillBlank',
+                        question: 'I ___ a student.',
+                        answer: 'am',
+                        options: ['am', 'is', 'are', 'be'],
+                        explanation: '"I" tar alltid "am" i presens.'
+                    },
+                    {
+                        type: 'fillBlank',
+                        question: 'They ___ playing football.',
+                        answer: 'are',
+                        options: ['is', 'are', 'am', 'be'],
+                        explanation: '"They" er flertall og tar "are".'
+                    },
+                    {
+                        type: 'correction',
+                        question: 'He dont like coffee.',
+                        answer: "He doesn't like coffee.",
+                        explanation: 'Med "he/she/it" bruker vi "doesn\'t" (ikke "dont").'
+                    },
+                    {
+                        type: 'fillBlank',
+                        question: 'We ___ dinner at 7 PM yesterday.',
+                        answer: 'had',
+                        options: ['have', 'has', 'had', 'having'],
+                        explanation: '"Yesterday" indikerer fortid, så vi bruker "had".'
+                    }
+                ],
+                writing: [
+                    {
+                        prompt: 'Describe your morning routine in 3-4 sentences.',
+                        hint: 'Use present tense: I wake up, I eat, I go...',
+                        minWords: 20,
+                        keywords: ['wake', 'eat', 'go', 'morning', 'breakfast']
+                    },
+                    {
+                        prompt: 'What is your favorite food? Explain why you like it.',
+                        hint: 'Use "because" to explain reasons.',
+                        minWords: 25,
+                        keywords: ['favorite', 'because', 'like', 'taste', 'delicious']
+                    },
+                    {
+                        prompt: 'Describe the weather today.',
+                        hint: 'Use adjectives: sunny, cold, warm, cloudy...',
+                        minWords: 15,
+                        keywords: ['weather', 'today', 'sunny', 'cold', 'warm', 'rain']
+                    }
+                ],
+                speech: [
+                    {
+                        text: 'Hello, how are you today?',
+                        translation: 'Hei, hvordan har du det i dag?',
+                        phonetic: '/həˈloʊ haʊ ɑːr juː təˈdeɪ/'
+                    },
+                    {
+                        text: 'I would like a cup of coffee, please.',
+                        translation: 'Jeg vil gjerne ha en kopp kaffe, takk.',
+                        phonetic: '/aɪ wʊd laɪk ə kʌp əv ˈkɔːfi pliːz/'
+                    },
+                    {
+                        text: 'What time does the meeting start?',
+                        translation: 'Når starter møtet?',
+                        phonetic: '/wɒt taɪm dʌz ðə ˈmiːtɪŋ stɑːrt/'
+                    },
+                    {
+                        text: 'The weather is beautiful today.',
+                        translation: 'Været er nydelig i dag.',
+                        phonetic: '/ðə ˈweðər ɪz ˈbjuːtɪfəl təˈdeɪ/'
+                    },
+                    {
+                        text: 'Can you help me with this problem?',
+                        translation: 'Kan du hjelpe meg med dette problemet?',
+                        phonetic: '/kæn juː help miː wɪð ðɪs ˈprɒbləm/'
+                    }
+                ],
+                listening: [
+                    {
+                        text: 'I need to buy some groceries.',
+                        question: 'What does the person need to do?',
+                        options: ['Buy groceries', 'Cook dinner', 'Go to work', 'Clean the house'],
+                        answer: 'Buy groceries',
+                        translation: 'Jeg må kjøpe litt dagligvarer.'
+                    },
+                    {
+                        text: 'The train leaves at half past nine.',
+                        question: 'What time does the train leave?',
+                        options: ['9:00', '9:15', '9:30', '9:45'],
+                        answer: '9:30',
+                        translation: 'Toget går klokken halv ti.'
+                    },
+                    {
+                        text: 'She works as a teacher at the local school.',
+                        question: 'What is her job?',
+                        options: ['Doctor', 'Teacher', 'Nurse', 'Engineer'],
+                        answer: 'Teacher',
+                        translation: 'Hun jobber som lærer på den lokale skolen.'
+                    }
+                ]
+            },
+            intermediate: {
+                grammar: [
+                    {
+                        type: 'fillBlank',
+                        question: 'If I ___ rich, I would travel the world.',
+                        answer: 'were',
+                        options: ['am', 'was', 'were', 'be'],
+                        explanation: 'I "second conditional" bruker vi "were" for alle personer.'
+                    },
+                    {
+                        type: 'fillBlank',
+                        question: 'She has been working here ___ 2015.',
+                        answer: 'since',
+                        options: ['for', 'since', 'from', 'during'],
+                        explanation: '"Since" brukes med et spesifikt tidspunkt (2015).'
+                    },
+                    {
+                        type: 'correction',
+                        question: 'I have went to Paris last year.',
+                        answer: 'I went to Paris last year.',
+                        explanation: '"Last year" er fortid, så vi bruker "went" (ikke "have gone").'
+                    },
+                    {
+                        type: 'fillBlank',
+                        question: 'The book ___ by millions of people.',
+                        answer: 'has been read',
+                        options: ['has read', 'has been read', 'was reading', 'is reading'],
+                        explanation: 'Passiv form i present perfect: has/have been + past participle.'
+                    },
+                    {
+                        type: 'fillBlank',
+                        question: 'He asked me ___ I could help him.',
+                        answer: 'if',
+                        options: ['that', 'if', 'what', 'which'],
+                        explanation: '"If" brukes i indirekte ja/nei-spørsmål.'
+                    }
+                ],
+                writing: [
+                    {
+                        prompt: 'Write about a memorable trip you have taken. Include where you went, what you did, and why it was special.',
+                        hint: 'Use past tense and descriptive adjectives.',
+                        minWords: 50,
+                        keywords: ['traveled', 'visited', 'memorable', 'experience', 'enjoyed']
+                    },
+                    {
+                        prompt: 'Describe your ideal job and explain why it appeals to you.',
+                        hint: 'Use conditional: "I would like to..." and "because..."',
+                        minWords: 50,
+                        keywords: ['career', 'because', 'skills', 'passionate', 'opportunity']
+                    },
+                    {
+                        prompt: 'Compare living in a city versus living in the countryside.',
+                        hint: 'Use comparison words: more, less, better, worse, whereas...',
+                        minWords: 60,
+                        keywords: ['however', 'whereas', 'compared', 'advantage', 'disadvantage']
+                    }
+                ],
+                speech: [
+                    {
+                        text: 'I apologize for the inconvenience this may have caused.',
+                        translation: 'Jeg beklager ulempen dette kan ha forårsaket.',
+                        phonetic: '/aɪ əˈpɒlədʒaɪz fər ði ɪnkənˈviːniəns/'
+                    },
+                    {
+                        text: 'Would you mind if I opened the window?',
+                        translation: 'Har du noe imot at jeg åpner vinduet?',
+                        phonetic: '/wʊd juː maɪnd ɪf aɪ ˈoʊpənd ðə ˈwɪndoʊ/'
+                    },
+                    {
+                        text: 'The presentation has been rescheduled to next Thursday.',
+                        translation: 'Presentasjonen er flyttet til neste torsdag.',
+                        phonetic: '/ðə ˌprezənˈteɪʃən hæz biːn ˌriːˈʃedjuːld/'
+                    },
+                    {
+                        text: 'I thoroughly enjoyed reading that thought-provoking article.',
+                        translation: 'Jeg likte virkelig å lese den tankevekkende artikkelen.',
+                        phonetic: '/aɪ ˈθʌrəli ɪnˈdʒɔɪd ˈriːdɪŋ ðæt θɔːt prəˈvoʊkɪŋ ˈɑːrtɪkəl/'
+                    }
+                ],
+                listening: [
+                    {
+                        text: 'The deadline for the project has been extended until Friday.',
+                        question: 'What happened to the deadline?',
+                        options: ['It was cancelled', 'It was moved earlier', 'It was extended', 'It stayed the same'],
+                        answer: 'It was extended',
+                        translation: 'Fristen for prosjektet er forlenget til fredag.'
+                    },
+                    {
+                        text: 'Despite the rain, we decided to continue with our outdoor plans.',
+                        question: 'What did they decide to do?',
+                        options: ['Cancel their plans', 'Stay inside', 'Continue with outdoor plans', 'Wait for better weather'],
+                        answer: 'Continue with outdoor plans',
+                        translation: 'Til tross for regnet bestemte vi oss for å fortsette med utendørsplanene.'
+                    }
+                ]
+            },
+            advanced: {
+                grammar: [
+                    {
+                        type: 'fillBlank',
+                        question: 'Had I known about the meeting, I ___ attended.',
+                        answer: 'would have',
+                        options: ['would', 'would have', 'will have', 'had'],
+                        explanation: 'Third conditional med inversjon: Had I known... + would have + past participle.'
+                    },
+                    {
+                        type: 'fillBlank',
+                        question: 'Not only ___ he finish the project, but he also exceeded expectations.',
+                        answer: 'did',
+                        options: ['did', 'does', 'has', 'was'],
+                        explanation: '"Not only" i begynnelsen krever inversjon: Not only did...'
+                    },
+                    {
+                        type: 'correction',
+                        question: 'The data suggests that the hypothesis are correct.',
+                        answer: 'The data suggest that the hypothesis is correct.',
+                        explanation: '"Data" kan være flertall (suggest), og "hypothesis" er entall (is).'
+                    },
+                    {
+                        type: 'fillBlank',
+                        question: 'It is imperative that she ___ present at the hearing.',
+                        answer: 'be',
+                        options: ['is', 'be', 'was', 'being'],
+                        explanation: 'Subjunctive mood etter "it is imperative that" krever base form "be".'
+                    },
+                    {
+                        type: 'fillBlank',
+                        question: 'Scarcely ___ arrived when the storm began.',
+                        answer: 'had we',
+                        options: ['we had', 'had we', 'we have', 'have we'],
+                        explanation: '"Scarcely" i begynnelsen krever inversjon: Scarcely had we...'
+                    }
+                ],
+                writing: [
+                    {
+                        prompt: 'Analyze the impact of artificial intelligence on the modern workplace. Discuss both opportunities and challenges.',
+                        hint: 'Use academic language: Furthermore, Nevertheless, It could be argued that...',
+                        minWords: 80,
+                        keywords: ['furthermore', 'nevertheless', 'consequently', 'implications', 'efficiency']
+                    },
+                    {
+                        prompt: 'Write a formal complaint letter about a product or service you were dissatisfied with.',
+                        hint: 'Use formal expressions: I am writing to express my dissatisfaction...',
+                        minWords: 70,
+                        keywords: ['dissatisfied', 'compensation', 'resolution', 'disappointed', 'request']
+                    },
+                    {
+                        prompt: 'Discuss the pros and cons of remote work, providing a balanced argument.',
+                        hint: 'Use hedging language: tends to, may, it appears that...',
+                        minWords: 80,
+                        keywords: ['whereas', 'although', 'productivity', 'flexibility', 'collaboration']
+                    }
+                ],
+                speech: [
+                    {
+                        text: 'The pharmaceutical industry has made unprecedented breakthroughs in vaccine development.',
+                        translation: 'Farmasøytisk industri har gjort enestående gjennombrudd i vaksineutvikling.',
+                        phonetic: '/ðə ˌfɑːrməˈsuːtɪkəl ˈɪndəstri hæz meɪd ʌnˈpresɪdentɪd ˈbreɪkθruːz/'
+                    },
+                    {
+                        text: 'Notwithstanding the economic downturn, the company maintained its competitive edge.',
+                        translation: 'Til tross for den økonomiske nedgangen, opprettholdt selskapet sin konkurransefordel.',
+                        phonetic: '/ˌnɒtwɪθˈstændɪŋ ðə ˌiːkəˈnɒmɪk ˈdaʊntɜːrn/'
+                    },
+                    {
+                        text: 'The committee thoroughly scrutinized the proposal before reaching a unanimous decision.',
+                        translation: 'Komiteen gransket grundig forslaget før de kom til en enstemmig beslutning.',
+                        phonetic: '/ðə kəˈmɪti ˈθʌrəli ˈskruːtɪnaɪzd ðə prəˈpoʊzəl/'
+                    }
+                ],
+                listening: [
+                    {
+                        text: 'Notwithstanding the initial setbacks, the project ultimately exceeded all expectations and delivered remarkable results.',
+                        question: 'What was the outcome of the project?',
+                        options: ['It failed completely', 'It met expectations', 'It exceeded expectations', 'It was cancelled'],
+                        answer: 'It exceeded expectations',
+                        translation: 'Til tross for de innledende tilbakeslagene, overgikk prosjektet til slutt alle forventninger.'
+                    },
+                    {
+                        text: 'The board has unanimously decided to postpone the merger indefinitely pending further investigation.',
+                        question: 'What decision was made about the merger?',
+                        options: ['Approved immediately', 'Rejected permanently', 'Postponed indefinitely', 'Modified slightly'],
+                        answer: 'Postponed indefinitely',
+                        translation: 'Styret har enstemmig besluttet å utsette fusjonen på ubestemt tid.'
+                    }
+                ]
+            }
+        };
+
+        // ========== INITIALIZE APP ==========
+        function init() {
+            loadState();
+            updateStreak();
+            updateUI();
+            registerServiceWorker();
+        }
+
+        function loadState() {
+            const saved = localStorage.getItem('englishProState');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                state = { ...state, ...parsed };
+                
+                // Reset daily progress if new day
+                if (state.todayDate !== new Date().toDateString()) {
+                    state.todayDate = new Date().toDateString();
+                    state.dailyCompleted = 0;
+                    state.completedToday = {
+                        grammar: false,
+                        writing: false,
+                        speech: false,
+                        listening: false
+                    };
+                }
+            }
+        }
+
+        function saveState() {
+            localStorage.setItem('englishProState', JSON.stringify(state));
+        }
+
+        function updateStreak() {
+            const today = new Date().toDateString();
+            const yesterday = new Date(Date.now() - 86400000).toDateString();
+            
+            if (state.lastActive === today) {
+                // Already active today
+            } else if (state.lastActive === yesterday) {
+                state.streak++;
+                state.lastActive = today;
+            } else if (state.lastActive !== today) {
+                state.streak = state.lastActive ? 0 : 1;
+                state.lastActive = today;
+            }
+            saveState();
+        }
+
+        function updateUI() {
+            // Update streak
+            document.getElementById('streakCount').textContent = state.streak;
+            
+            // Update level and XP
+            document.getElementById('currentLevel').textContent = state.level;
+            const xpNeeded = state.level * 100;
+            document.getElementById('xpCurrent').textContent = state.xp;
+            document.getElementById('xpNeeded').textContent = xpNeeded;
+            document.getElementById('levelProgress').style.width = `${(state.xp / xpNeeded) * 100}%`;
+            
+            // Update daily progress
+            document.getElementById('dailyProgress').textContent = state.dailyCompleted;
+            
+            // Update stats
+            document.getElementById('totalExercises').textContent = state.totalExercises;
+            const accuracy = state.totalExercises > 0 
+                ? Math.round((state.correctAnswers / state.totalExercises) * 100) 
+                : 0;
+            document.getElementById('accuracy').textContent = accuracy + '%';
+            document.getElementById('totalWords').textContent = state.wordsLearned;
+            
+            // Update difficulty
+            document.getElementById('difficultyBadge').textContent = 
+                state.difficulty === 'beginner' ? 'Nybegynner' :
+                state.difficulty === 'intermediate' ? 'Middels' : 'Avansert';
+            
+            document.querySelectorAll('.diff-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.diff === state.difficulty);
+            });
+            
+            // Update exercise buttons
+            ['grammar', 'writing', 'speech', 'listening'].forEach(type => {
+                const btn = document.getElementById(`${type}Btn`);
+                const status = document.getElementById(`${type}Status`);
+                if (state.completedToday[type]) {
+                    btn.classList.add('completed');
+                    status.textContent = '✓ Fullført';
+                } else {
+                    btn.classList.remove('completed');
+                    status.textContent = 'Ikke fullført';
+                }
+            });
+
+            // Update daily goal styling
+            if (state.dailyCompleted >= 2) {
+                document.getElementById('dailyGoal').style.background = 
+                    'linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%)';
+            }
+        }
+
+        function setDifficulty(diff) {
+            state.difficulty = diff;
+            saveState();
+            updateUI();
+        }
+
+        function addXP(amount) {
+            state.xp += amount;
+            const xpNeeded = state.level * 100;
+            
+            if (state.xp >= xpNeeded) {
+                state.xp -= xpNeeded;
+                state.level++;
+            }
+            saveState();
+            updateUI();
+        }
+
+        // ========== EXERCISE FUNCTIONS ==========
+        function startExercise(type) {
+            currentExercise = {
+                type: type,
+                questions: shuffleArray([...exerciseData[state.difficulty][type]]).slice(0, 5),
+                currentIndex: 0,
+                score: 0,
+                answered: false,
+                userAnswer: null
+            };
+            
+            document.getElementById('exerciseView').classList.add('active');
+            document.getElementById('exerciseTitle').textContent = 
+                type === 'grammar' ? '📝 Grammatikk' :
+                type === 'writing' ? '✍️ Skriving' :
+                type === 'speech' ? '🎤 Uttale' : '👂 Lytting';
+            
+            renderProgressDots();
+            renderQuestion();
+        }
+
+        function closeExercise() {
+            document.getElementById('exerciseView').classList.remove('active');
+        }
+
+        function renderProgressDots() {
+            const dots = document.getElementById('progressDots');
+            dots.innerHTML = currentExercise.questions.map((_, i) => {
+                let className = 'progress-dot';
+                if (i < currentExercise.currentIndex) className += ' done';
+                if (i === currentExercise.currentIndex) className += ' current';
+                return `<div class="${className}"></div>`;
+            }).join('');
+        }
+
+        function renderQuestion() {
+            const content = document.getElementById('exerciseContent');
+            const q = currentExercise.questions[currentExercise.currentIndex];
+            const type = currentExercise.type;
+            
+            currentExercise.answered = false;
+            currentExercise.userAnswer = null;
+            document.getElementById('actionBtn').textContent = 'Sjekk svar';
+            document.getElementById('actionBtn').className = 'btn btn-primary';
+            document.getElementById('actionBtn').disabled = true;
+
+            if (type === 'grammar') {
+                renderGrammarQuestion(content, q);
+            } else if (type === 'writing') {
+                renderWritingQuestion(content, q);
+            } else if (type === 'speech') {
+                renderSpeechQuestion(content, q);
+            } else if (type === 'listening') {
+                renderListeningQuestion(content, q);
+            }
+        }
+
+        function renderGrammarQuestion(content, q) {
+            if (q.type === 'fillBlank') {
+                content.innerHTML = `
+                    <div class="question-card">
+                        <div class="question-type">Fyll inn riktig ord</div>
+                        <div class="question-text">${q.question.replace('___', '<span class="blank"></span>')}</div>
+                        <div class="choices" id="choices">
+                            ${q.options.map(opt => `
+                                <button class="choice-btn" onclick="selectChoice(this, '${opt}')">${opt}</button>
+                            `).join('')}
+                        </div>
+                        <div class="feedback" id="feedback"></div>
+                    </div>
+                `;
+            } else if (q.type === 'correction') {
+                content.innerHTML = `
+                    <div class="question-card">
+                        <div class="question-type">Rett setningen</div>
+                        <div class="question-text" style="color: var(--error);">❌ ${q.question}</div>
+                        <input type="text" class="answer-input" id="answerInput" 
+                            placeholder="Skriv den riktige setningen..." 
+                            oninput="enableCheck()">
+                        <div class="feedback" id="feedback"></div>
+                    </div>
+                `;
+            }
+        }
+
+        function renderWritingQuestion(content, q) {
+            content.innerHTML = `
+                <div class="question-card">
+                    <div class="question-type">Skriveøvelse</div>
+                    <div class="question-text">${q.prompt}</div>
+                    <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 15px;">
+                        💡 ${q.hint}
+                    </p>
+                    <textarea class="writing-area" id="writingArea" 
+                        placeholder="Skriv svaret ditt her..." 
+                        oninput="updateCharCount()"></textarea>
+                    <div class="char-count">
+                        <span id="wordCount">0</span> ord (minimum ${q.minWords})
+                    </div>
+                    <div class="feedback" id="feedback"></div>
+                </div>
+            `;
+        }
+
+        function renderSpeechQuestion(content, q) {
+            content.innerHTML = `
+                <div class="question-card">
+                    <div class="speech-section">
+                        <div class="question-type">Si denne setningen</div>
+                        <div class="speech-text">"${q.text}"</div>
+                        <div class="speech-translation">${q.translation}</div>
+                        <button class="play-btn" onclick="speakText('${q.text}')">
+                            🔊 Hør uttale
+                        </button>
+                        <button class="mic-btn" id="micBtn" onclick="toggleRecording()">🎤</button>
+                        <p style="font-size: 14px; color: var(--text-muted);">
+                            Trykk på mikrofonen og si setningen
+                        </p>
+                        <div class="speech-result" id="speechResult">
+                            Din uttale vises her...
+                        </div>
+                        <div class="feedback" id="feedback"></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderListeningQuestion(content, q) {
+            content.innerHTML = `
+                <div class="question-card">
+                    <div class="question-type">Lytteøvelse</div>
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <button class="play-btn" onclick="speakText('${q.text}')" style="font-size: 18px; padding: 15px 30px;">
+                            🔊 Spill av lyden
+                        </button>
+                    </div>
+                    <div class="question-text">${q.question}</div>
+                    <div class="choices" id="choices">
+                        ${q.options.map(opt => `
+                            <button class="choice-btn" onclick="selectChoice(this, '${opt}')">${opt}</button>
+                        `).join('')}
+                    </div>
+                    <div class="feedback" id="feedback"></div>
+                </div>
+            `;
+        }
+
+        function selectChoice(btn, value) {
+            document.querySelectorAll('.choice-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            currentExercise.userAnswer = value;
+            document.getElementById('actionBtn').disabled = false;
+        }
+
+        function enableCheck() {
+            const input = document.getElementById('answerInput') || document.getElementById('writingArea');
+            if (input && input.value.trim().length > 0) {
+                currentExercise.userAnswer = input.value.trim();
+                document.getElementById('actionBtn').disabled = false;
+            }
+        }
+
+        function updateCharCount() {
+            const area = document.getElementById('writingArea');
+            const words = area.value.trim().split(/\s+/).filter(w => w.length > 0).length;
+            document.getElementById('wordCount').textContent = words;
+            enableCheck();
+        }
+
+        function handleAction() {
+            if (!currentExercise.answered) {
+                checkAnswer();
+            } else {
+                nextQuestion();
+            }
+        }
+
+        function checkAnswer() {
+            currentExercise.answered = true;
+            const q = currentExercise.questions[currentExercise.currentIndex];
+            const feedback = document.getElementById('feedback');
+            let isCorrect = false;
+
+            if (currentExercise.type === 'grammar' || currentExercise.type === 'listening') {
+                if (q.type === 'correction') {
+                    isCorrect = currentExercise.userAnswer.toLowerCase().trim() === q.answer.toLowerCase().trim();
+                    const input = document.getElementById('answerInput');
+                    input.classList.add(isCorrect ? 'correct' : 'incorrect');
+                } else {
+                    isCorrect = currentExercise.userAnswer === q.answer;
+                    document.querySelectorAll('.choice-btn').forEach(btn => {
+                        if (btn.textContent === q.answer) btn.classList.add('correct');
+                        if (btn.classList.contains('selected') && !isCorrect) btn.classList.add('incorrect');
+                    });
+                }
+
+                feedback.className = `feedback show ${isCorrect ? 'success' : 'error'}`;
+                feedback.innerHTML = `
+                    <div class="feedback-title">
+                        ${isCorrect ? '✅ Riktig!' : '❌ Ikke helt'}
+                    </div>
+                    ${!isCorrect ? `<div class="correction">
+                        <div class="correction-label">Riktig svar:</div>
+                        ${q.answer}
+                    </div>` : ''}
+                    <p style="margin-top: 10px; font-size: 14px;">${q.explanation || q.translation || ''}</p>
+                `;
+            } else if (currentExercise.type === 'writing') {
+                const minWords = q.minWords;
+                const words = currentExercise.userAnswer.split(/\s+/).filter(w => w.length > 0);
+                const wordCount = words.length;
+                const keywordsUsed = q.keywords.filter(kw => 
+                    currentExercise.userAnswer.toLowerCase().includes(kw.toLowerCase())
+                );
+                
+                isCorrect = wordCount >= minWords && keywordsUsed.length >= 2;
+                
+                feedback.className = `feedback show ${isCorrect ? 'success' : 'error'}`;
+                feedback.innerHTML = `
+                    <div class="feedback-title">
+                        ${isCorrect ? '✅ Bra jobbet!' : '⚠️ Tips for forbedring'}
+                    </div>
+                    <p>Du skrev ${wordCount} ord ${wordCount >= minWords ? '✓' : `(trenger ${minWords})`}</p>
+                    <p>Nøkkelord brukt: ${keywordsUsed.length > 0 ? keywordsUsed.join(', ') : 'ingen'}</p>
+                    ${!isCorrect ? `<p style="margin-top: 10px;">Prøv å inkludere: ${q.keywords.slice(0, 3).join(', ')}</p>` : ''}
+                `;
+                
+                state.wordsLearned += keywordsUsed.length;
+            } else if (currentExercise.type === 'speech') {
+                // Speech is handled separately
+                isCorrect = currentExercise.speechScore >= 70;
+            }
+
+            if (isCorrect) {
+                currentExercise.score++;
+                state.correctAnswers++;
+            }
+            state.totalExercises++;
+
+            document.getElementById('actionBtn').textContent = 
+                currentExercise.currentIndex < currentExercise.questions.length - 1 
+                    ? 'Neste →' : 'Se resultater';
+            document.getElementById('actionBtn').className = 'btn btn-success';
+        }
+
+        function nextQuestion() {
+            currentExercise.currentIndex++;
+            
+            if (currentExercise.currentIndex >= currentExercise.questions.length) {
+                showResults();
+            } else {
+                renderProgressDots();
+                renderQuestion();
+            }
+        }
+
+        function showResults() {
+            const percentage = Math.round((currentExercise.score / currentExercise.questions.length) * 100);
+            const xpEarned = currentExercise.score * 20;
+            
+            addXP(xpEarned);
+            
+            // Mark as completed
+            state.completedToday[currentExercise.type] = true;
+            state.dailyCompleted = Object.values(state.completedToday).filter(v => v).length;
+            saveState();
+            updateUI();
+
+            const content = document.getElementById('exerciseContent');
+            content.innerHTML = `
+                <div class="results-screen">
+                    <div class="results-icon">${percentage >= 80 ? '🏆' : percentage >= 50 ? '👍' : '💪'}</div>
+                    <div class="results-title">
+                        ${percentage >= 80 ? 'Fantastisk!' : percentage >= 50 ? 'Bra jobbet!' : 'Fortsett å øve!'}
+                    </div>
+                    <div class="results-subtitle">
+                        Du fullførte ${currentExercise.type === 'grammar' ? 'grammatikk' : 
+                            currentExercise.type === 'writing' ? 'skrive' :
+                            currentExercise.type === 'speech' ? 'uttale' : 'lytte'}øvelsen
+                    </div>
+                    <div class="results-stats">
+                        <div class="result-stat">
+                            <div class="result-stat-value">${currentExercise.score}/${currentExercise.questions.length}</div>
+                            <div class="result-stat-label">Riktige</div>
+                        </div>
+                        <div class="result-stat">
+                            <div class="result-stat-value">${percentage}%</div>
+                            <div class="result-stat-label">Poengsum</div>
+                        </div>
+                        <div class="result-stat">
+                            <div class="result-stat-value">+${xpEarned}</div>
+                            <div class="result-stat-label">XP</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('actionBtn').textContent = 'Tilbake til meny';
+            document.getElementById('actionBtn').onclick = closeExercise;
+            document.getElementById('actionBtn').className = 'btn btn-primary';
+        }
+
+        // ========== SPEECH FUNCTIONS ==========
+        let recognition;
+        let isRecording = false;
+
+        function speakText(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-US';
+            utterance.rate = 0.9;
+            speechSynthesis.speak(utterance);
+        }
+
+        function toggleRecording() {
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                alert('Talegjenkjenning støttes ikke i denne nettleseren. Prøv Chrome eller Safari.');
+                return;
+            }
+
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            
+            if (isRecording) {
+                recognition.stop();
+                return;
+            }
+
+            recognition = new SpeechRecognition();
+            recognition.lang = 'en-US';
+            recognition.continuous = false;
+            recognition.interimResults = true;
+
+            const micBtn = document.getElementById('micBtn');
+            const result = document.getElementById('speechResult');
+            const q = currentExercise.questions[currentExercise.currentIndex];
+
+            recognition.onstart = () => {
+                isRecording = true;
+                micBtn.classList.add('recording');
+                result.textContent = 'Lytter...';
+            };
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                result.textContent = transcript;
+                
+                if (event.results[0].isFinal) {
+                    const similarity = calculateSimilarity(transcript.toLowerCase(), q.text.toLowerCase());
+                    currentExercise.speechScore = similarity;
+                    currentExercise.userAnswer = transcript;
+                    
+                    const feedback = document.getElementById('feedback');
+                    feedback.className = `feedback show ${similarity >= 70 ? 'success' : 'error'}`;
+                    feedback.innerHTML = `
+                        <div class="feedback-title">
+                            ${similarity >= 90 ? '🌟 Perfekt uttale!' : 
+                              similarity >= 70 ? '✅ Bra uttale!' : 
+                              '⚠️ Prøv igjen'}
+                        </div>
+                        <p>Likhet: ${similarity}%</p>
+                        ${similarity < 70 ? `<div class="correction">
+                            <div class="correction-label">Du sa:</div>
+                            "${transcript}"
+                            <div class="correction-label" style="margin-top: 10px;">Riktig:</div>
+                            "${q.text}"
+                        </div>` : ''}
+                    `;
+
+                    document.getElementById('actionBtn').disabled = false;
+                    
+                    if (!currentExercise.answered) {
+                        currentExercise.answered = true;
+                        if (similarity >= 70) {
+                            currentExercise.score++;
+                            state.correctAnswers++;
+                        }
+                        state.totalExercises++;
+                        document.getElementById('actionBtn').textContent = 
+                            currentExercise.currentIndex < currentExercise.questions.length - 1 
+                                ? 'Neste →' : 'Se resultater';
+                        document.getElementById('actionBtn').className = 'btn btn-success';
+                    }
+                }
+            };
+
+            recognition.onend = () => {
+                isRecording = false;
+                micBtn.classList.remove('recording');
+            };
+
+            recognition.onerror = (event) => {
+                console.error('Speech error:', event.error);
+                isRecording = false;
+                micBtn.classList.remove('recording');
+                result.textContent = 'Kunne ikke høre deg. Prøv igjen.';
+            };
+
+            recognition.start();
+        }
+
+        function calculateSimilarity(str1, str2) {
+            const words1 = str1.split(/\s+/).filter(w => w.length > 0);
+            const words2 = str2.split(/\s+/).filter(w => w.length > 0);
+            
+            let matches = 0;
+            words1.forEach(w1 => {
+                if (words2.some(w2 => w2.includes(w1) || w1.includes(w2))) {
+                    matches++;
+                }
+            });
+            
+            return Math.round((matches / Math.max(words1.length, words2.length)) * 100);
+        }
+
+        // ========== UTILITY FUNCTIONS ==========
+        function shuffleArray(array) {
+            const arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function registerServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('sw.js').catch(err => {
+                    console.log('SW registration failed:', err);
+                });
+            }
+        }
+
+        // Initialize app
+        init();
+    </script>
+</body>
+</html>
